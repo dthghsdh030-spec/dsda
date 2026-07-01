@@ -285,6 +285,67 @@ function _qkaspq:Init(titleText)
 		targetParent = success and coreGui or lp:WaitForChild("PlayerGui")
 	end
 	gui.Parent = targetParent
+	
+	if UIS.TouchEnabled and not UIS.KeyboardEnabled then
+		local mobileBtn = Instance.new("ImageButton")
+		mobileBtn.Size = UDim2.new(0, 45, 0, 45)
+		mobileBtn.Position = UDim2.new(0.5, -22, 0, 10)
+		mobileBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
+		mobileBtn.BorderSizePixel = 0
+		mobileBtn.Image = "rbxassetid://10886326162"
+		mobileBtn.ImageColor3 = Color3.fromRGB(120, 110, 250)
+		mobileBtn.Parent = gui
+		local mCorner = Instance.new("UICorner")
+		mCorner.CornerRadius = UDim.new(1, 0)
+		mCorner.Parent = mobileBtn
+		local mStroke = Instance.new("UIStroke")
+		mStroke.Color = Color3.fromRGB(120, 110, 250)
+		mStroke.Thickness = 1.5
+		mStroke.Parent = mobileBtn
+		
+		local mDragging, mDragStart, mStartPos
+		mobileBtn.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+				mDragging = true
+				mDragStart = input.Position
+				mStartPos = mobileBtn.Position
+				input.Changed:Connect(function()
+					if input.UserInputState == Enum.UserInputState.End then
+						mDragging = false
+					end
+				end)
+			end
+		end)
+		regConn(UIS.InputChanged:Connect(function(input)
+			if mDragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+				local d = input.Position - mDragStart
+				mobileBtn.Position = UDim2.new(mStartPos.X.Scale, mStartPos.X.Offset + d.X, mStartPos.Y.Scale, mStartPos.Y.Offset + d.Y)
+			end
+		end))
+		
+		mobileBtn.MouseButton1Click:Connect(function()
+			_qkaspq_store.Open = not _qkaspq_store.Open
+			if _qkaspq_store.Open then
+				if main then
+					main.Visible = true
+					if mainScale then
+						mainScale.Scale = 0
+						tw(mainScale, {Scale = 1}, 0.35)
+					end
+				end
+			else
+				if mainScale then tw(mainScale, {Scale = 0}, 0.25) end
+				if tooltip then tooltip.Visible = false end
+				currentHoveredMod = nil
+				task.delay(0.25, function()
+					if not _qkaspq_store.Open and main then
+						main.Visible = false
+					end
+				end)
+			end
+		end)
+	end
+	
 	local wmFrame = Instance.new("Frame")
 	wmFrame.Name = "ZenithWatermark"
 	wmFrame.AnchorPoint = Vector2.new(0.5, 0)
@@ -3063,7 +3124,7 @@ function _qkaspq:Init(titleText)
 		if gpe then
 			return
 		end
-		if input.KeyCode == Enum.KeyCode.RightShift then
+		if input.KeyCode.Name == (_qkaspq_store.ToggleKey or "RightShift") and input.KeyCode.Name ~= "None" then
 			_qkaspq_store.Open = not _qkaspq_store.Open
 			if _qkaspq_store.Open then
 				main.Visible = true
