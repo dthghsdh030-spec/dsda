@@ -2030,54 +2030,63 @@ function _qkaspq:Init(titleText)
 			end
 		end
 		local svActive = false
+		local hueActive = false
 		local svBtn = Instance.new("TextButton")
 		svBtn.Size = UDim2.new(1, 0, 1, 0)
 		svBtn.BackgroundTransparency = 1
 		svBtn.Text = ""
 		svBtn.Parent = valGrad
-		local function updateSV()
-			local mousePos = UIS:GetMouseLocation()
-			local relX = math.clamp((mousePos.X - valGrad.AbsolutePosition.X) / valGrad.AbsoluteSize.X, 0, 1)
-			local relY = math.clamp((mousePos.Y - valGrad.AbsolutePosition.Y) / valGrad.AbsoluteSize.Y, 0, 1)
+		
+		local function updateSV(inputPos)
+			local relX = math.clamp((inputPos.X - valGrad.AbsolutePosition.X) / valGrad.AbsoluteSize.X, 0, 1)
+			local relY = math.clamp((inputPos.Y - valGrad.AbsolutePosition.Y) / valGrad.AbsoluteSize.Y, 0, 1)
 			currentS = relX
 			currentV = 1 - relY
 			svCursor.Position = UDim2.new(relX, 0, relY, 0)
 			updateColor()
 		end
-		svBtn.MouseButton1Down:Connect(function()
-			svActive = true
-			updateSV()
+		
+		svBtn.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				svActive = true
+				updateSV(input.Position)
+			end
 		end)
-		local hueActive = false
+		
 		local hueBtn = Instance.new("TextButton")
 		hueBtn.Size = UDim2.new(1, 0, 1, 0)
 		hueBtn.BackgroundTransparency = 1
 		hueBtn.Text = ""
 		hueBtn.Parent = hueSlider
-		local function updateHue()
-			local mousePos = UIS:GetMouseLocation()
-			local relX = math.clamp((mousePos.X - hueSlider.AbsolutePosition.X) / hueSlider.AbsoluteSize.X, 0, 1)
+		
+		local function updateHue(inputPos)
+			local relX = math.clamp((inputPos.X - hueSlider.AbsolutePosition.X) / hueSlider.AbsoluteSize.X, 0, 1)
 			currentH = relX
 			hueCursor.Position = UDim2.new(relX, -2, 0, -2)
 			svFrame.BackgroundColor3 = Color3.fromHSV(currentH, 1, 1)
 			updateColor()
 		end
-		hueBtn.MouseButton1Down:Connect(function()
-			hueActive = true
-			updateHue()
+		
+		hueBtn.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				hueActive = true
+				updateHue(input.Position)
+			end
 		end)
+		
 		regConn(UIS.InputEnded:Connect(function(input)
 			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 				svActive = false
 				hueActive = false
 			end
 		end))
+		
 		regConn(UIS.InputChanged:Connect(function(input)
 			if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
 				if svActive then
-					updateSV()
+					updateSV(input.Position)
 				elseif hueActive then
-					updateHue()
+					updateHue(input.Position)
 				end
 			end
 		end))
